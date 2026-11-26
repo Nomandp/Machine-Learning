@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action_title }} - AI Student Performance Prediction & Early Warning System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="{{ url_for('students') }}">Students</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ action_title }}</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="fw-bold mb-0 text-dark">
+                            <i class="fa-solid fa-user-pen text-primary me-2"></i>{{ action_title }}
+                        </h4>
+                        <small class="text-muted">Enter academic indicators to run automated Machine Learning risk evaluation</small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                        <i class="fa-solid fa-brain me-1"></i> Auto-Predicts on Save
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST">
+
+                        <!-- Section 1: Basic Identity & Demographics -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary text-uppercase tracking-wider small border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-id-card me-1"></i> 1. Student Identification & Demographics
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Student ID <span class="text-danger">*</span></label>
+                                    <input type="text" name="student_id" class="form-control" placeholder="e.g. DUET-2024-AI-020"
+                                           value="{{ student.student_id if student else '' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control" placeholder="e.g. Asad Siddiqui"
+                                           value="{{ student.name if student else '' }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" name="age" class="form-control" min="15" max="25"
+                                           value="{{ student.age if student else 18 }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Gender</label>
+                                    <select name="sex" class="form-select">
+                                        <option value="M" {% if student and student.sex == 'M' %}selected{% endif %}>Male (M)</option>
+                                        <option value="F" {% if student and student.sex == 'F' %}selected{% endif %}>Female (F)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Health Status (1-5)</label>
+                                    <select name="health" class="form-select">
+                                        <option value="1" {% if student and student.health == 1 %}selected{% endif %}>1 - Very Poor</option>
+                                        <option value="2" {% if student and student.health == 2 %}selected{% endif %}>2 - Poor</option>
+                                        <option value="3" {% if not student or student.health == 3 %}selected{% endif %}>3 - Normal</option>
+                                        <option value="4" {% if student and student.health == 4 %}selected{% endif %}>4 - Good</option>
+                                        <option value="5" {% if student and student.health == 5 %}selected{% endif %}>5 - Very Good</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Academic Track Record -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary text-uppercase tracking-wider small border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-graduation-cap me-1"></i> 2. Academic Performance & Attendance
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Period 1 Grade (G1) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.5" min="0" max="20" name="g1" class="form-control"
+                                           placeholder="0 to 20" value="{{ student.g1 if student else 11.0 }}" required>
+                                    <small class="text-muted">Scale 0 - 20 (&lt;10 is failing)</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Period 2 Grade (G2) <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.5" min="0" max="20" name="g2" class="form-control"
+                                           placeholder="0 to 20" value="{{ student.g2 if student else 11.0 }}" required>
+                                    <small class="text-muted">Most critical predictor feature</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Past Course Failures</label>
+                                    <select name="failures" class="form-select">
+                                        <option value="0" {% if not student or student.failures == 0 %}selected{% endif %}>0 Failures</option>
+                                        <option value="1" {% if student and student.failures == 1 %}selected{% endif %}>1 Failure</option>
+                                        <option value="2" {% if student and student.failures == 2 %}selected{% endif %}>2 Failures</option>
+                                        <option value="3" {% if student and student.failures >= 3 %}selected{% endif %}>3 or more Failures</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">School Absences (Days)</label>
+                                    <input type="number" min="0" max="93" name="absences" class="form-control"
+                                           placeholder="0 to 93" value="{{ student.absences if student else 4 }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Study Habits & Social Support -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-primary text-uppercase tracking-wider small border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-book-open-reader me-1"></i> 3. Study Habits & Environmental Factors
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Weekly Study Time</label>
+                                    <select name="studytime" class="form-select">
+                                        <option value="1" {% if student and student.studytime == 1 %}selected{% endif %}>1: &lt; 2 hours/week</option>
+                                        <option value="2" {% if not student or student.studytime == 2 %}selected{% endif %}>2: 2 to 5 hours/week</option>
+                                        <option value="3" {% if student and student.studytime == 3 %}selected{% endif %}>3: 5 to 10 hours/week</option>
+                                        <option value="4" {% if student and student.studytime == 4 %}selected{% endif %}>4: &gt; 10 hours/week</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Extra Educational Support</label>
+                                    <select name="schoolsup" class="form-select">
+                                        <option value="no" {% if not student or student.schoolsup == 'no' %}selected{% endif %}>No Extra Support</option>
+                                        <option value="yes" {% if student and student.schoolsup == 'yes' %}selected{% endif %}>Yes (Remedial Support)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Family Educational Support</label>
+                                    <select name="famsup" class="form-select">
+                                        <option value="yes" {% if not student or student.famsup == 'yes' %}selected{% endif %}>Yes</option>
+                                        <option value="no" {% if student and student.famsup == 'no' %}selected{% endif %}>No</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Extra Paid Tutoring</label>
+                                    <select name="paid" class="form-select">
+                                        <option value="no" {% if not student or student.paid == 'no' %}selected{% endif %}>No</option>
+                                        <option value="yes" {% if student and student.paid == 'yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Higher Education Goal</label>
+                                    <select name="higher" class="form-select">
+                                        <option value="yes" {% if not student or student.higher == 'yes' %}selected{% endif %}>Yes (Aims for University)</option>
+                                        <option value="no" {% if student and student.higher == 'no' %}selected{% endif %}>No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Internet Access at Home</label>
+                                    <select name="internet" class="form-select">
+                                        <option value="yes" {% if not student or student.internet == 'yes' %}selected{% endif %}>Yes</option>
+                                        <option value="no" {% if student and student.internet == 'no' %}selected{% endif %}>No</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Mother's Education</label>
+                                    <select name="medu" class="form-select">
+                                        <option value="0" {% if student and student.medu == 0 %}selected{% endif %}>0 - None</option>
+                                        <option value="1" {% if student and student.medu == 1 %}selected{% endif %}>1 - Primary (4th grade)</option>
+                                        <option value="2" {% if not student or student.medu == 2 %}selected{% endif %}>2 - 5th to 9th grade</option>
+                                        <option value="3" {% if student and student.medu == 3 %}selected{% endif %}>3 - Secondary education</option>
+                                        <option value="4" {% if student and student.medu == 4 %}selected{% endif %}>4 - Higher education</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Machine Learning Inference Selection -->
+                        <div class="p-3 rounded-3 bg-light border mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold mb-1 text-dark"><i class="fa-solid fa-microchip text-primary me-2"></i>Select Evaluation Algorithm</h6>
+                                    <small class="text-muted">Choose which trained machine learning model performs the inference.</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <select name="model_choice" class="form-select">
+                                        <option value="random_forest" selected>Random Forest (Lab 05 - 100 Trees)</option>
+                                        <option value="logistic_regression">Logistic Regression (Lab 03 - Sigmoid)</option>
+                                        <option value="ensemble">Ensemble (Average RF + LR)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{{ url_for('students') }}" class="btn btn-outline-secondary px-4">
+                                <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Save & Run AI Prediction
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

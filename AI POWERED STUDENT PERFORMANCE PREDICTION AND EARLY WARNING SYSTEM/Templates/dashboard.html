@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AI Student Performance Prediction & Early Warning System{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 mt-4">
+
+    <!-- Header & Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Academic Performance & Early Warning Dashboard</h2>
+            <p class="text-muted small mb-0">Real-time predictive monitoring and behavioral clustering across registered students</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button id="btnBatchPredict" class="btn btn-outline-primary btn-sm px-3 shadow-sm d-flex align-items-center gap-2">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Re-Evaluate All (AI)</span>
+            </button>
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary btn-sm px-3 shadow-sm d-flex align-items-center gap-2">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Add Student</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Metric 1: Total Students -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label mb-1">Registered Students</div>
+                        <div class="kpi-value">{{ stats.total_students }}</div>
+                        <small class="text-muted"><i class="fa-solid fa-database me-1"></i> SQLite Store</small>
+                    </div>
+                    <div class="kpi-icon primary">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 2: At Risk -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="kpi-card border-danger border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label text-danger mb-1">At Academic Risk</div>
+                        <div class="kpi-value text-danger">{{ stats.at_risk_count }}</div>
+                        <small class="text-danger fw-semibold">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                            {% if stats.total_students > 0 %}
+                                {{ ((stats.at_risk_count / stats.total_students) * 100)|round(1) }}% of cohort
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="kpi-icon danger">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 3: On Track -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="kpi-card border-success border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label text-success mb-1">On Track / Safe</div>
+                        <div class="kpi-value text-success">{{ stats.not_at_risk_count }}</div>
+                        <small class="text-success fw-semibold">
+                            <i class="fa-solid fa-circle-check me-1"></i>
+                            {% if stats.total_students > 0 %}
+                                {{ ((stats.not_at_risk_count / stats.total_students) * 100)|round(1) }}% satisfactory
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="kpi-icon success">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 4: Pending Interventions -->
+        <div class="col-sm-6 col-xl-3">
+            <div class="kpi-card border-warning border-opacity-25">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label text-warning mb-1">Pending Interventions</div>
+                        <div class="kpi-value text-warning">{{ stats.pending_interventions }}</div>
+                        <small class="text-muted"><i class="fa-solid fa-clock me-1"></i> Action items</small>
+                    </div>
+                    <div class="kpi-icon warning">
+                        <i class="fa-solid fa-handshake-angle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Cohort Averages Banner -->
+    <div class="card mb-4 bg-white border-0 shadow-sm">
+        <div class="card-body py-3">
+            <div class="row g-3 text-center align-items-center">
+                <div class="col-6 col-md-3 border-end">
+                    <span class="text-muted small d-block">Cohort Avg G1 Grade</span>
+                    <strong class="fs-5 text-dark">{{ stats.avg_g1 }} / 20</strong>
+                </div>
+                <div class="col-6 col-md-3 border-end-md">
+                    <span class="text-muted small d-block">Cohort Avg G2 Grade</span>
+                    <strong class="fs-5 text-dark">{{ stats.avg_g2 }} / 20</strong>
+                </div>
+                <div class="col-6 col-md-3 border-end">
+                    <span class="text-muted small d-block">Cohort Avg Absences</span>
+                    <strong class="fs-5 text-dark">{{ stats.avg_absences }} classes</strong>
+                </div>
+                <div class="col-6 col-md-3">
+                    <span class="text-muted small d-block">Cohort Avg Study Time</span>
+                    <strong class="fs-5 text-dark">{{ stats.avg_studytime }} scale (2-5h/wk)</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Charts Section -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Risk Status Distribution -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Risk Distribution</h6>
+                    <span class="badge bg-light text-muted border">Supervised</span>
+                </div>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <div style="height: 240px; width: 100%; position: relative;">
+                        <canvas id="riskDistributionChart"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-around w-100 mt-3 pt-2 border-top text-center small">
+                        <div>
+                            <span class="d-block text-danger fw-bold fs-6">{{ stats.at_risk_count }}</span>
+                            <span class="text-muted">At Risk</span>
+                        </div>
+                        <div>
+                            <span class="d-block text-success fw-bold fs-6">{{ stats.not_at_risk_count }}</span>
+                            <span class="text-muted">On Track</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Grade Trajectory (G1 vs G2) -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-chart-column text-info me-2"></i>Grade Trajectory (G1 vs G2)</h6>
+                    <span class="badge bg-light text-muted border">Academic Drift</span>
+                </div>
+                <div class="card-body">
+                    <div style="height: 270px; width: 100%;">
+                        <canvas id="gradeProgressionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 3: K-Means Clustering Personas -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-circle-nodes text-warning me-2"></i>K-Means Clusters (Lab 10)</h6>
+                    <span class="badge bg-light text-muted border">Unsupervised</span>
+                </div>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <div style="height: 240px; width: 100%; position: relative;">
+                        <canvas id="clusterDistributionChart"></canvas>
+                    </div>
+                    <small class="text-muted mt-2 text-center">Segmented by Study Time, Absences, Past Failures & Exam Grades</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Absences vs Risk Probability Chart & Recent Alerts Table -->
+    <div class="row g-4 mb-4">
+        <!-- Absences Correlation -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-user-clock text-danger me-2"></i>Absences vs Predicted Risk</h6>
+                    <span class="badge bg-light text-muted border">Correlation</span>
+                </div>
+                <div class="card-body">
+                    <div style="height: 280px; width: 100%;">
+                        <canvas id="absencesRiskChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Early Warning Alerts -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0 fw-bold"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>High-Priority Early Warnings</h6>
+                    <a href="{{ url_for('early_warning') }}" class="btn btn-sm btn-outline-danger">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Grades (G1/G2)</th>
+                                    <th>Absences</th>
+                                    <th>Risk Level</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recent_warnings %}
+                                    {% for st in recent_warnings %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">{{ st.name }}</div>
+                                                <small class="text-muted font-monospace">{{ st.student_id }}</small>
+                                            </td>
+                                            <td>{{ st.g1 }} / {{ st.g2 }}</td>
+                                            <td>
+                                                <span class="badge {% if st.absences > 10 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ st.absences }} days
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-risk-danger">
+                                                    {{ (st.risk_probability * 100)|round(0)|int }}% Risk
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('early_warning') }}" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Review Intervention Plan">
+                                                    <i class="fa-solid fa-hand-holding-hand"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            <i class="fa-solid fa-circle-check text-success fs-4 d-block mb-2"></i>
+                                            No students currently flagged as At Risk!
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Inject backend metrics for Chart.js rendering
+    const DASHBOARD_DATA = {
+        atRisk: {{ stats.at_risk_count }},
+        notAtRisk: {{ stats.not_at_risk_count }},
+        clusterDist: {{ stats.cluster_dist|tojson }},
+        students: {{ stats.students|tojson }}
+    };
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
