@@ -4,7 +4,7 @@
 *Dawood University of Engineering & Technology (DUET), Karachi*  
 *Department of Artificial Intelligence — Batch 2024*  
 *Instructor: Engr. Hamza Farooqui*
-*Group Members: 
+Group Members: 
 Noman Ali (24F-AI-202)
 Muhammad Ibrahim (24F-AI-201)
 Ali Muhammad (24F-AI-203)
