@@ -1,0 +1,254 @@
+{
+    "dataset_name": "UCI Student Performance Dataset (Math)",
+    "total_samples": 395,
+    "train_samples": 316,
+    "test_samples": 79,
+    "features": [
+        "age",
+        "sex",
+        "studytime",
+        "failures",
+        "absences",
+        "G1",
+        "G2",
+        "schoolsup",
+        "famsup",
+        "paid",
+        "higher",
+        "internet",
+        "Medu",
+        "Fedu",
+        "freetime",
+        "goout",
+        "health"
+    ],
+    "cluster_features": [
+        "studytime",
+        "absences",
+        "failures",
+        "G1",
+        "G2"
+    ],
+    "logistic_regression": {
+        "accuracy": 0.9240506329113924,
+        "precision": 0.8846153846153846,
+        "recall": 0.8846153846153846,
+        "f1_score": 0.8846153846153846,
+        "roc_auc": 0.9782293178519594,
+        "confusion_matrix": [
+            [
+                50,
+                3
+            ],
+            [
+                3,
+                23
+            ]
+        ],
+        "report": {
+            "0": {
+                "precision": 0.9433962264150944,
+                "recall": 0.9433962264150944,
+                "f1-score": 0.9433962264150944,
+                "support": 53.0
+            },
+            "1": {
+                "precision": 0.8846153846153846,
+                "recall": 0.8846153846153846,
+                "f1-score": 0.8846153846153846,
+                "support": 26.0
+            },
+            "accuracy": 0.9240506329113924,
+            "macro avg": {
+                "precision": 0.9140058055152395,
+                "recall": 0.9140058055152395,
+                "f1-score": 0.9140058055152395,
+                "support": 79.0
+            },
+            "weighted avg": {
+                "precision": 0.9240506329113924,
+                "recall": 0.9240506329113924,
+                "f1-score": 0.9240506329113924,
+                "support": 79.0
+            }
+        }
+    },
+    "random_forest": {
+        "accuracy": 0.9113924050632911,
+        "precision": 0.8518518518518519,
+        "recall": 0.8846153846153846,
+        "f1_score": 0.8679245283018868,
+        "roc_auc": 0.9637155297532657,
+        "confusion_matrix": [
+            [
+                49,
+                4
+            ],
+            [
+                3,
+                23
+            ]
+        ],
+        "report": {
+            "0": {
+                "precision": 0.9423076923076923,
+                "recall": 0.9245283018867925,
+                "f1-score": 0.9333333333333333,
+                "support": 53.0
+            },
+            "1": {
+                "precision": 0.8518518518518519,
+                "recall": 0.8846153846153846,
+                "f1-score": 0.8679245283018868,
+                "support": 26.0
+            },
+            "accuracy": 0.9113924050632911,
+            "macro avg": {
+                "precision": 0.8970797720797721,
+                "recall": 0.9045718432510885,
+                "f1-score": 0.9006289308176101,
+                "support": 79.0
+            },
+            "weighted avg": {
+                "precision": 0.9125374157019728,
+                "recall": 0.9113924050632911,
+                "f1-score": 0.9118063848419712,
+                "support": 79.0
+            }
+        },
+        "feature_importance": [
+            {
+                "feature": "G2",
+                "importance": 0.4804
+            },
+            {
+                "feature": "G1",
+                "importance": 0.257
+            },
+            {
+                "feature": "failures",
+                "importance": 0.0416
+            },
+            {
+                "feature": "absences",
+                "importance": 0.0414
+            },
+            {
+                "feature": "goout",
+                "importance": 0.0274
+            },
+            {
+                "feature": "Fedu",
+                "importance": 0.0259
+            },
+            {
+                "feature": "age",
+                "importance": 0.0223
+            },
+            {
+                "feature": "Medu",
+                "importance": 0.0174
+            },
+            {
+                "feature": "freetime",
+                "importance": 0.017
+            },
+            {
+                "feature": "health",
+                "importance": 0.0166
+            },
+            {
+                "feature": "schoolsup",
+                "importance": 0.0106
+            },
+            {
+                "feature": "studytime",
+                "importance": 0.0104
+            },
+            {
+                "feature": "famsup",
+                "importance": 0.008
+            },
+            {
+                "feature": "sex",
+                "importance": 0.0075
+            },
+            {
+                "feature": "internet",
+                "importance": 0.0066
+            },
+            {
+                "feature": "paid",
+                "importance": 0.0053
+            },
+            {
+                "feature": "higher",
+                "importance": 0.0044
+            }
+        ]
+    },
+    "kmeans": {
+        "k": 3,
+        "elbow_k": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+        ],
+        "elbow_inertias": [
+            1975.0,
+            1429.67,
+            1156.76,
+            968.58,
+            800.45,
+            710.89,
+            635.37,
+            563.64
+        ],
+        "clusters": {
+            "0": {
+                "name": "Moderate Performer / Watchlist",
+                "description": "Average grades, moderate absences, vulnerable to falling behind without guidance.",
+                "badge_color": "warning",
+                "count": 199,
+                "percentage": 50.4,
+                "avg_g1": 9.11,
+                "avg_g2": 8.92,
+                "avg_g3": 8.43,
+                "avg_studytime": 2.08,
+                "avg_absences": 6.99,
+                "avg_failures": 0.15
+            },
+            "1": {
+                "name": "High Achiever & Dedicated",
+                "description": "High exam scores, low past failures, disciplined study schedule.",
+                "badge_color": "success",
+                "count": 154,
+                "percentage": 39.0,
+                "avg_g1": 14.31,
+                "avg_g2": 14.21,
+                "avg_g3": 14.4,
+                "avg_studytime": 2.14,
+                "avg_absences": 4.29,
+                "avg_failures": 0.08
+            },
+            "2": {
+                "name": "Academic Risk / High Needs",
+                "description": "Multiple past failures, lower exam grades, urgent academic intervention needed.",
+                "badge_color": "danger",
+                "count": 42,
+                "percentage": 10.6,
+                "avg_g1": 6.98,
+                "avg_g2": 6.38,
+                "avg_g3": 5.21,
+                "avg_studytime": 1.48,
+                "avg_absences": 4.83,
+                "avg_failures": 2.12
+            }
+        }
+    }
+}
