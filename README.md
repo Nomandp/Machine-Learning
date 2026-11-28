@@ -7,4 +7,4 @@ Made by **Noman Ali (24F-AI-202)**
 ## 2. CCA Project: AI Powered Student Performance Prediction and Early Warning System
 
 Made by
-**NOMAN AI202**
+**NOMAN AI-202** **Muhammad Ibrahim AI-201**
