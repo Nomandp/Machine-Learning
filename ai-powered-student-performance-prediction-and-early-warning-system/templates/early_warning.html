@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Early Warning Alerts - AI Student Performance System{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 mt-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h2 class="fw-bold mb-0">Early Warning Alert & Intervention Center</h2>
+                <span class="badge bg-danger rounded-pill px-3">{{ students|length }} Flagged</span>
+            </div>
+            <p class="text-muted small mb-0">
+                Automated early identification of students susceptible to academic failure with recommended remedial action plans.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('prediction') }}" class="btn btn-outline-primary btn-sm px-3 shadow-sm d-flex align-items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Evaluate New Student</span>
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm d-flex align-items-center gap-2">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>View Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="card mb-4 bg-white border-0 shadow-sm">
+        <div class="card-body py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('early_warning', status='All') }}"
+                   class="btn btn-sm {% if status_filter == 'All' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                    All Active Warnings ({{ students|length }})
+                </a>
+                <a href="{{ url_for('early_warning', status='Pending') }}"
+                   class="btn btn-sm {% if status_filter == 'Pending' %}btn-danger{% else %}btn-outline-secondary{% endif %}">
+                    <i class="fa-solid fa-clock me-1"></i> Pending Action
+                </a>
+                <a href="{{ url_for('early_warning', status='In Progress') }}"
+                   class="btn btn-sm {% if status_filter == 'In Progress' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    <i class="fa-solid fa-spinner me-1"></i> In Progress
+                </a>
+                <a href="{{ url_for('early_warning', status='Completed') }}"
+                   class="btn btn-sm {% if status_filter == 'Completed' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                    <i class="fa-solid fa-check me-1"></i> Resolved
+                </a>
+            </div>
+
+            <div class="small text-muted">
+                <i class="fa-solid fa-bell text-warning me-1"></i> Threshold: Predicted failure risk &ge; 50%
+            </div>
+        </div>
+    </div>
+
+    <!-- Early Warning Cards Grid -->
+    {% if students %}
+        <div class="row g-4 mb-4">
+            {% for st in students %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="card h-100 card-hover border-top border-4 {% if st.risk_probability >= 0.7 %}border-danger{% else %}border-warning{% endif %}">
+                        <div class="card-body">
+
+                            <!-- Top Header of Card -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark">{{ st.name }}</h5>
+                                    <small class="text-muted font-monospace">{{ st.student_id }}</small>
+                                </div>
+                                <span class="badge {% if st.risk_probability >= 0.7 %}bg-danger{% else %}bg-warning text-dark{% endif %} px-2 py-1">
+                                    {{ (st.risk_probability * 100)|round(0)|int }}% Risk ({{ st.risk_level }})
+                                </span>
+                            </div>
+
+                            <!-- Academic Deficit Metrics -->
+                            <div class="row g-2 text-center small mb-3">
+                                <div class="col-4">
+                                    <div class="p-2 rounded bg-light border">
+                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Exam G1</span>
+                                        <strong class="{% if st.g1 < 10 %}text-danger{% else %}text-dark{% endif %}">{{ st.g1 }}</strong> / 20
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 rounded bg-light border">
+                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Exam G2</span>
+                                        <strong class="{% if st.g2 < 10 %}text-danger{% else %}text-dark{% endif %}">{{ st.g2 }}</strong> / 20
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 rounded bg-light border">
+                                        <span class="text-muted d-block" style="font-size: 0.72rem;">Absences</span>
+                                        <strong class="{% if st.absences > 10 %}text-danger{% else %}text-dark{% endif %}">{{ st.absences }}</strong> days
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cluster Persona -->
+                            <div class="mb-3 small">
+                                <span class="badge bg-light text-muted border">
+                                    <i class="fa-solid fa-tag text-primary me-1"></i> {{ st.cluster_label }}
+                                </span>
+                            </div>
+
+                            <!-- Actionable Early Warning Recommendation -->
+                            <div class="p-3 rounded-3 bg-light border mb-3">
+                                <span class="fw-bold small text-dark d-block mb-1">
+                                    <i class="fa-solid fa-hand-holding-medical text-primary me-1"></i> Recommended Action Plan:
+                                </span>
+                                <p class="text-muted small mb-0" style="line-height: 1.4;">
+                                    {{ st.recommendations or st.action_plan }}
+                                </p>
+                            </div>
+
+                            <!-- Intervention Status & Counselor -->
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top small">
+                                <div>
+                                    <span class="text-muted">Status:</span>
+                                    <span class="badge {% if st.intervention_status == 'Completed' %}bg-success{% elif st.intervention_status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %} ms-1">
+                                        {{ st.intervention_status or 'Pending' }}
+                                    </span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal" data-bs-target="#modalIntervention{{ st.intervention_id or st.id }}">
+                                    <i class="fa-solid fa-user-doctor me-1"></i> Manage
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intervention Update Modal -->
+                <div class="modal fade" id="modalIntervention{{ st.intervention_id or st.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="POST" action="{{ url_for('update_intervention') }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">
+                                        <i class="fa-solid fa-hand-holding-hand text-primary me-2"></i>Intervention: {{ st.name }}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="intervention_id" value="{{ st.intervention_id or st.id }}">
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Intervention Progress Status</label>
+                                        <select name="status" class="form-select">
+                                            <option value="Pending" {% if st.intervention_status == 'Pending' %}selected{% endif %}>Pending - Scheduled for Review</option>
+                                            <option value="In Progress" {% if st.intervention_status == 'In Progress' %}selected{% endif %}>In Progress - Tutoring / Counseling Underway</option>
+                                            <option value="Completed" {% if st.intervention_status == 'Completed' %}selected{% endif %}>Completed - Satisfactory Improvement Verified</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Assigned Faculty / Counselor</label>
+                                        <input type="text" name="assigned_counselor" class="form-control"
+                                               value="{{ st.assigned_counselor or 'Prof. Hamza Farooqui (Academic Advisor)' }}">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Intervention Progress Notes</label>
+                                        <textarea name="notes" class="form-control" rows="3"
+                                                  placeholder="Record details of student counseling, tutoring attendance, or parent discussions...">{{ st.intervention_notes or '' }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Update Intervention Record</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card bg-white border-0 shadow-sm py-5 text-center">
+            <div class="card-body">
+                <i class="fa-solid fa-circle-check text-success display-4 mb-3"></i>
+                <h4 class="fw-bold text-dark">No At-Risk Students in this Queue</h4>
+                <p class="text-muted small mx-auto" style="max-width: 450px;">
+                    All students in this filtered category are performing above risk thresholds or their interventions are resolved.
+                </p>
+                <a href="{{ url_for('early_warning', status='All') }}" class="btn btn-outline-primary btn-sm">View All Warnings</a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
